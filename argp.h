@@ -2,21 +2,23 @@
 #define ARGP_CPP
 
 #include <cstring>
+#include <iostream>
+#include <sstream>
 #include <map>
 #include <set>
-#include <sstream>
 
 namespace argp {
 
 	class sstream {
 	private:
 		std::stringstream stream;
+	
 	public:
-		sstream() {}
-
+		sstream() {};
+		
 		sstream(std::string str) {
 			stream << str;
-		}
+		};
 
 		sstream& operator >> (std::string& str) {
 			this->stream >> str;
@@ -32,7 +34,10 @@ namespace argp {
 		std::set<std::string> options;
 
 	public:
-		bool parse(int argc, char *argv[], int option=SINGLE_DASH_IS_MULTIFLAG) {
+		
+		parser() {};
+		
+		inline bool parse(int argc, char *argv[], int option=SINGLE_DASH_IS_MULTIFLAG) {
 			char* token;
 			int argc_length;
 			
@@ -45,7 +50,7 @@ namespace argp {
 				
 				assert( token[0] == '-' && argc_length > 1 );
 
-				if ( i+1 == argc || argv[i+1][0] == '-') {										// OPTION
+				if ( i+1 == argc || argv[i+1][0] == '-') {											// OPTION
 					if ( token[1] == '-' )
 						goto two_dashes;
 
@@ -80,37 +85,48 @@ namespace argp {
 			return true;
 		};
 
-		inline sstream operator()(std::initializer_list<char const* const> list) const {
-			for ( std::initializer_list<char const* const>::iterator it = list.begin(); it != list.end(); ++it) {
+		inline sstream operator()(std::initializer_list<std::string> list) const {
+			for ( std::initializer_list<std::string>::iterator it = list.begin(); it != list.end(); ++it) {
 				if (this->parameters.find(std::string(*it)) != this->parameters.end())
 					return sstream(this->parameters.find(std::string(*it))->second);
 			}
 			return sstream();
-
 		};
 
-		inline bool operator[](char const* element) const {
+		inline sstream operator()(std::string element) const {
+			if (this->parameters.find(std::string(element)) != this->parameters.end())
+				return sstream(this->parameters.find(std::string(element))->second);
+			return sstream();
+		};
+
+
+		inline bool operator[](std::initializer_list<std::string> list) const {
+			for ( std::initializer_list<std::string>::iterator it = list.begin(); it != list.end(); ++it) {
+				if (this->options.find(*it) != this->options.end())
+					return true;		
+			}
+			return false;
+		};
+		
+		inline bool operator[](std::string element) const {
 			return this->options.find(element) != this->options.end();
 		};
 
-		void summary() {
-			std::set<std::string>::iterator it;
+		inline void summary() {
 			std::cout << "Options: ";
-			for ( it = this->options.begin(); it != this->options.end(); it++ ) {
+			for ( std::set<std::string>::iterator it = this->options.begin(); it != this->options.end(); it++ ) {
 				std::cout << *it << " ";
 			}
-			std::cout << std::endl;
-
-			std::map<std::string, std::string>::iterator it2;
-			std::cout << "Parameters: ";
-			for ( it2 = this->parameters.begin(); it2 != this->parameters.end(); it2++ ) {
+			
+			std::cout << std::endl << "Parameters: ";
+			
+			for ( std::map<std::string, std::string>::iterator it2 = this->parameters.begin(); it2 != this->parameters.end(); it2++ ) {
 				std::cout << it2->first << " " << it2->second << " ";
 			}
 			std::cout << std::endl;
-		}
+		};
 	};
-
-}
+};
 
 #endif
 
