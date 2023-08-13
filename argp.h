@@ -77,7 +77,6 @@ namespace argp {
 					done:
 					continue;
 				}
-				std::cout << argc_length << " " << token << " " << sizeof(token) << " " << sizeof(char) << std::endl;
 				assert( ( argc_length == 2 && token[1]  != '-' ) || ( argc_length > 2 && token[1] == '-' && token[2] != '-' ) );
 
 				this->parameters[ token ] = argv[i+1];												// PARAMETER
